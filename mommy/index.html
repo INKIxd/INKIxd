@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мой мини-сайт</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 300px; }
+        h2 { text-align: center; }
+        input { width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #message { margin-top: 15px; text-align: center; font-weight: bold; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Регистрация</h2>
+    <input type="text" id="reg_login" placeholder="Логин">
+    <input type="text" id="reg_name" placeholder="Имя">
+    <input type="text" id="reg_email" placeholder="Email">
+    <input type="password" id="reg_password" placeholder="Пароль">
+    <button onclick="signup()">Зарегистрироваться</button>
+</div>
+
+<div class="container" style="margin-left: 20px;">
+    <h2>Вход</h2>
+    <input type="text" id="log_login" placeholder="Логин">
+    <input type="password" id="log_password" placeholder="Пароль">
+    <button onclick="login()">Войти</button>
+    <div id="message"></div>
+</div>
+
+<script>
+    // Базовый URL твоего бэкенда
+    const API_URL = "http://127.0.0.1:8000";
+
+    // Функция регистрации
+    async function signup() {
+        const data = {
+            login: document.getElementById("reg_login").value,
+            name: document.getElementById("reg_name").value,
+            email: document.getElementById("reg_email").value,
+            password: document.getElementById("reg_password").value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/signup`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (response.status === 201) {
+                showMessage("Успешно зарегистрирован!", "success");
+            } else if (response.status === 409) {
+                showMessage("Этот логин уже занят!", "error");
+            } else {
+                showMessage("Ошибка при регистрации", "error");
+            }
+        } catch (error) {
+            showMessage("Сервер не отвечает", "error");
+        }
+    }
+
+    // Функция входа
+    async function login() {
+        const data = {
+            login: document.getElementById("log_login").value,
+            name: "", // FastAPI требует эти поля по схеме, отправим пустые
+            email: "",
+            password: document.getElementById("log_password").value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                showMessage(`Привет, ${userData.name}! Вы вошли.`, "success");
+            } else {
+                showMessage("Неверный логин или пароль", "error");
+            }
+        } catch (error) {
+            showMessage("Сервер не отвечает", "error");
+        }
+    }
+
+    // Вспомогательная функция для вывода сообщений
+    function showMessage(text, type) {
+        const msgDiv = document.getElementById("message");
+        msgDiv.innerText = text;
+        msgDiv.className = type;
+    }
+</script>
+
+</body>
+</html>
